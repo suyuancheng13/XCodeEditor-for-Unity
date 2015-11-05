@@ -362,7 +362,7 @@ namespace UnityEditor.XCodeEditor
 //			}
 //		}
 		
-		public PBXDictionary AddFile( string filePath, PBXGroup parent = null, string tree = "SOURCE_ROOT", bool createBuildFiles = true, bool weak = false )
+		public PBXDictionary AddFile( string filePath, PBXGroup parent = null, string tree = "SOURCE_ROOT", bool createBuildFiles = true, bool weak = false ,string compileFlag = " ")
 		{
 			PBXDictionary results = new PBXDictionary();
 			string absPath = string.Empty;
@@ -446,8 +446,14 @@ namespace UnityEditor.XCodeEditor
 					case "PBXSourcesBuildPhase":
 						foreach( KeyValuePair<string, PBXSourcesBuildPhase> currentObject in sourcesBuildPhases ) {
 							buildFile = new PBXBuildFile( fileReference, weak );
-							buildFiles.Add( buildFile );
-							currentObject.Value.AddBuildFile( buildFile );
+						//add by suyuancheng
+						if(!compileFlag.Equals(" "))
+						{
+							buildFile.AddCompilerFlag(compileFlag);
+						}
+						buildFiles.Add( buildFile );
+						currentObject.Value.AddBuildFile( buildFile );
+	
 						}
 						break;
 					case "PBXCopyFilesBuildPhase":
@@ -945,14 +951,30 @@ namespace UnityEditor.XCodeEditor
 			}
 			
 			Debug.Log( "Adding files..." );
-			foreach( string filePath in mod.files ) {
-				string absoluteFilePath = System.IO.Path.Combine( mod.path, filePath );
-
-
-				if( filePath.EndsWith(".framework") )
+//			foreach( string filePath in mod.files ) {
+				//				string absoluteFilePath = System.IO.Path.Combine( mod.path, filePath );
+				//
+				//
+				//				if( filePath.EndsWith(".framework") )
+				//					this.AddFile( absoluteFilePath, frameworkGroup, "GROUP", true, false);
+				//				else
+				//					this.AddFile( absoluteFilePath, modGroup );
+				//			}
+				
+					//add by suyuancheng
+					
+			foreach( XCModSourceFile filePath in mod.files )
+			{
+				string absoluteFilePath = System.IO.Path.Combine( mod.path, filePath.filePath );
+						//	Debug.Log("============================file path:"+filePath.filePath);
+						//	Debug.Log("============================flag:"+filePath.compileFlag);
+						
+				if( filePath.filePath.EndsWith(".framework") )
 					this.AddFile( absoluteFilePath, frameworkGroup, "GROUP", true, false);
 				else
-					this.AddFile( absoluteFilePath, modGroup );
+				{
+					this.AddFile( absoluteFilePath, modGroup,"SOURCE_ROOT",  true, false, filePath.compileFlag);
+				}
 			}
 			
 			Debug.Log( "Adding folders..." );

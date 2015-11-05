@@ -17,7 +17,8 @@ namespace UnityEditor.XCodeEditor
 //		private ArrayList excludes;
 		private Hashtable _datastore;
 		private ArrayList _libs;
-		
+
+		private ArrayList _files;
 		public string name { get; private set; }
 		public string path { get; private set; }
 		
@@ -63,12 +64,22 @@ namespace UnityEditor.XCodeEditor
 			}
 		}
 		
+//		public ArrayList files {
+//			get {
+//				return (ArrayList)_datastore["files"];
+//			}
+//		}
 		public ArrayList files {
-			get {
-				return (ArrayList)_datastore["files"];
+		get {
+			if( _files == null ) {
+				_files = new ArrayList( ((ArrayList)_datastore["files"]).Count );
+				foreach( string fileRef in (ArrayList)_datastore["files"] ) {
+					_files.Add( new XCModSourceFile( fileRef ) );
+				}
 			}
+			return _files;
 		}
-		
+	}
 		public ArrayList folders {
 			get {
 				return (ArrayList)_datastore["folders"];
@@ -133,6 +144,26 @@ namespace UnityEditor.XCodeEditor
 				string[] parts = inputString.Split( ':' );
 				filePath = parts[0];
 				isWeak = ( parts[1].CompareTo( "weak" ) == 0 );	
+			}
+			else {
+				filePath = inputString;
+			}
+		}
+	}
+	//add by suyuancheng
+	public class XCModSourceFile
+	{
+		public string filePath { get; private set; }
+		public string compileFlag { get; private set; }
+		
+		public XCModSourceFile( string inputString )
+		{
+			compileFlag = " ";
+			if( inputString.Contains( ":" ) ) {
+				string[] parts = inputString.Split( ':' );
+				filePath = parts[0].Trim();
+				compileFlag = parts[1].Trim();	
+				//Debug.Log("+++++++++++++++++++:file path:"+filePath+"++++++++++flag:"+compileFlag);
 			}
 			else {
 				filePath = inputString;
